@@ -11,13 +11,6 @@ pip install python-telegram-bot
 pip install PyGithub
 ```
 
-## Docs
-
-Get connected to the GitHub's API
-```python
-import get_connection as github
-git = github.get_connection(telegram_user_id)
-```
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
@@ -28,6 +21,14 @@ Now you are good to go.
 
 ```python
 python main.py
+```
+
+## Docs
+
+Get connected to the GitHub's API
+```python
+import get_connection as github
+git = github.get_connection(telegram_user_id)
 ```
 
 ## License
