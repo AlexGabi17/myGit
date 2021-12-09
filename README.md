@@ -31,5 +31,14 @@ import get_connection as github
 git = github.get_connection(telegram_user_id)
 ```
 
+## Generating GitHub Token
+
+myGit is using a personal access token instead of username and password to sign in in your GitHub's account. The tokens are more secure because you have full control of what someone can access with the token.
+
+
+![scope2](https://user-images.githubusercontent.com/39965333/145478390-0e037abd-825b-4d4f-97b9-72cc4906e6aa.png)
+
+
+
 ## License
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
