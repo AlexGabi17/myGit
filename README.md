@@ -1,4 +1,4 @@
-# Github's integration with Telegram bot
+# Github's integration with Telegram
 
 myGit is the your GiHub assistant. In your conversations with your team, you can simply insert the information about the projects you are working at. 
 
