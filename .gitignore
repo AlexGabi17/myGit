@@ -2,3 +2,4 @@ __pycache__
 */__pycache__
 token/token.txt
 migrations/__pycache__
+migrations/db/*
