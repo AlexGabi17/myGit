@@ -51,6 +51,10 @@ def setUser(update, context):
     if len(token) == 0:
         update.message.reply_text("You should copy the token from GitHub.\nexample: /set yourToken")
         return
+    
+    if int(update.message.chat_id) < 0:
+        update.message.reply_text("You cannot set your token in a group. It's not safe.\nGo private with the bot @@myGit_assistant_bot")
+        return 
 
     try:
        
