@@ -6,9 +6,10 @@ def create_connection(path):
     try:
         connection = sqlite3.connect(path)
         #print("Connection to database succesful")
-        return connection
     except Error as e:
         print(f"The error '{e}' occured")
+        raise Error(e)
+    return connection
 
 def execute_query(connection,query):
     cursor = connection.cursor()
