@@ -54,7 +54,9 @@ def setUser(update, context):
     
     if int(update.message.chat_id) < 0:
         update.message.reply_text("You cannot set your token in a group. It's not safe.\nGo private with the bot @@myGit_assistant_bot")
-        return 
+        return
+
+    
 
     try:
        
@@ -90,7 +92,7 @@ def get_myRepos(update, context):
     user_id = update.message.from_user.id
     git= github.get_connection(user_id)
     if git == -1:
-        update.message.reply_text("You are not registered")
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).")
     else:
         index=1
         result="List of all my repositories:\n"
@@ -98,7 +100,7 @@ def get_myRepos(update, context):
             result = result + str(index)+ ". " + repo.name + "\n"
             index = index + 1
         update.message.reply_text(result)
-
+    
 def error(update, context):
     """Log errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
