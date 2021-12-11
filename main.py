@@ -1,5 +1,5 @@
 
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 myGIt Bot to reply to Telegram messages.
@@ -12,7 +12,6 @@ relevant informations about the projects he's working at
 import logging
 import get_connection as github
 import migrations.db_conn as db
-import sqlite3
 from sqlite3 import Error
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 from telegram.update import Update
