@@ -11,13 +11,13 @@ relevant informations about the projects he's working at
 
 import logging
 import get_connection as github
-import migrations.db_conn as db
+from migrations.db_conn import Database
 from sqlite3 import Error
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 from telegram.update import Update
 
-
 path = "migrations/db/myGit.sqlite"
+db = Database(path)
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -45,10 +45,6 @@ def setUser(update: Update, context: CallbackContext):
     token = update.message.text[4:].strip()
     user_id = update.message.from_user.id
     
-    connection = db.create_connection(path)
-
-    cursor = connection.cursor()
-
     if len(token) == 0:
         update.message.reply_text("You should copy the token from GitHub.\nexample: /set yourToken")
         return
@@ -59,35 +55,23 @@ def setUser(update: Update, context: CallbackContext):
 
     try:
         #verify if user exist in database, if not, we insert it, else we update the GitHub Token
-        verify_query = """
-            SELECT * FROM users
-            WHERE id = """+ str(user_id) +""";"""
-        
-        cursor.execute(verify_query)
-        result = cursor.fetchall()
+        result = db.select('users', user_id)
+
         if result == []:
-            query = """
-                INSERT INTO users(id,token)
-                VALUES (""" + str(user_id) + """, '""" + str(token) + """');"""
+            db.insert('users',{'id': str(user_id), 'token': token})   
         else:
-            query = """
-                UPDATE users
-                SET TOKEN = '""" + str(token) + """'
-                WHERE id = """ + str(user_id) + """;
-            """
-        cursor.execute(query)
-        connection.commit()
+            db.update_user_token({'id': str(user_id), 'token': token})
         
         update.message.reply_text("Successfully updated your GitHub Access Token")
 
     except Error as e:
-        print(e)
+        print('Custom Error: ', e)
     #insert_username(user_id,username)
     
 
 def get_myRepos(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
-    git= github.get_connection(user_id)
+    git = github.get_connection(db, user_id)
     if git == -1:
         update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).")
     else:
