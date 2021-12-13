@@ -58,9 +58,9 @@ def setUser(update: Update, context: CallbackContext):
         result = db.select('users', user_id)
 
         if result == []:
-            db.insert('users', {'id': str(user_id), 'token': token})   
+            db.insert('users',{'id': str(user_id), 'token': token})   
         else:
-            db.update('users', {'id': str(user_id), 'token': token})
+            db.update_user_token({'id': str(user_id), 'token': token})
         
         update.message.reply_text("Successfully updated your GitHub Access Token")
 

@@ -36,16 +36,15 @@ class Database:
         self.cursor.execute(query)
         self.connection.commit()
 
-    def update(self, table, data):
-        if not data or not data.id:
+    def update_user_token(self, data):
+        if not data or not data["id"]:
             raise Error('Wrong data format')
-        query = f'UPDATE {str(table)} SET '
-        
-        for key, value in data.items():
-            query += f'{str(key)} = {str(value)}'
+        query = f'UPDATE users SET '
+     
+        query += f'token = "{str(data["token"])}" '
 
-        query += f'WHERE id = {str(data.id)};'
-        print(query)
+        query += f' WHERE id = {str(data["id"])};'
+        #print(query)
         self.cursor.execute(query)
         self.connection.commit()
 
