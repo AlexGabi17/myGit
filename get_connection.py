@@ -17,4 +17,12 @@ def get_connection(db: Database, user_id: int):
     except GithubException as e:
         return -1
 
+def verify_repo(conn,repo_name):
+    try:
+        git = conn
+        git.get_repo(repo_name)
+        return 1
+    except GithubException as e:
+        return -1
 
+    
