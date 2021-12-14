@@ -125,7 +125,7 @@ def getAllIssues(update: Update, context: CallbackContext):
     git = github.get_connection(db, user_id)
     repo_name=""
     if group_id > 0:
-        update.message.reply_text("Go on the group you had a repo")
+        update.message.reply_text("Go on the group you have a repo")
         return
     
     if git == -1:
