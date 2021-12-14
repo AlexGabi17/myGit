@@ -38,7 +38,7 @@ def echo(update: Update, context: CallbackContext):
     update.message.reply_text(update.message.text)
 
 def help(update: Update, context: CallbackContext):
-    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)"
+    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo"
     update.message.reply_text(result_help)
 
 def setUser(update: Update, context: CallbackContext):
@@ -75,7 +75,7 @@ def get_myRepos(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     git = github.get_connection(db, user_id)
     if git == -1:
-        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).")
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
     else:
         index=1
         result="List of all my repositories:\n"
@@ -92,7 +92,7 @@ def setRepoInChat(update: Update, context: CallbackContext):
     git = github.get_connection(db, user_id)
     
     if git == -1:
-        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).")
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
         return
     elif group_id > 0:
         update.message.reply_text("Go on your group and set the Group's repository.")
@@ -118,6 +118,46 @@ def setRepoInChat(update: Update, context: CallbackContext):
         except Error as e:
             print('Custom Error: ', e)
 
+def getAllIssues(update: Update, context: CallbackContext):
+    #returns all the issues from the repository set in a certain group chat 
+    user_id = update.message.from_user.id
+    group_id = int(update.message.chat_id)
+    git = github.get_connection(db, user_id)
+    repo_name=""
+    if group_id > 0:
+        update.message.reply_text("Go on the group you had a repo")
+        return
+    
+    if git == -1:
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
+        return
+    
+    try:
+        repo_name = db.select('groups',group_id)
+        if repo_name == []:
+            update.message.reply_text("You do not have a repository set for this group. ❌")
+            return
+
+        repo_name = repo_name[0][1]
+
+        if github.verify_repo(git, str(repo_name)) == -1:
+            update.message.reply_text("This repository doesn't exist.")
+            return
+        #now we construct the final message
+        result=f'Open Issues of {str(repo_name)} 🔴\n\n'
+        
+        issues = git.get_repo(str(repo_name)).get_issues(state='open')
+        index = 1
+        for issue in issues:
+            result +=f'{index}. {issue.title}\n'
+            index = index + 1
+        if index == 1:
+            result = "No issues on this repo.☑️"
+        update.message.reply_text(result)
+    except Error as e:
+        print('Custom Error: ',e)
+    
+
 
 def error(update: Update, context: CallbackContext):
     """Log errors caused by Updates."""
@@ -137,6 +177,7 @@ def main():
     dp.add_handler(CommandHandler("set",setUser))
     dp.add_handler(CommandHandler("repos",get_myRepos))
     dp.add_handler(CommandHandler("setrepo",setRepoInChat))
+    dp.add_handler(CommandHandler("issues",getAllIssues))
     dp.add_handler(MessageHandler(Filters.text,echo)) 
     dp.add_error_handler(error)
 
