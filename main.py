@@ -56,6 +56,7 @@ def setUser(update: Update, context: CallbackContext):
     try:
         #verify if user exist in database, if not, we insert it, else we update the GitHub Token
         result = db.select('users', user_id)
+        print(result[1])
 
         if result == []:
             db.insert('users',{'id': str(user_id), 'token': token})   
