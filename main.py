@@ -91,11 +91,15 @@ def setRepoInChat(update: Update, context: CallbackContext):
 
     git = github.get_connection(db, user_id)
     
-    if group_id > 0:
+    if git == -1:
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).")
+        return
+    elif group_id > 0:
         update.message.reply_text("Go on your group and set the Group's repository.")
         return
     elif len(repo_name) == 0:
         update.message.reply_text("You have to specify a repo name(i.e. username/myfirstrepo)")
+        return
     else:
         #verify if the repo received as param does exist
         if github.verify_repo(git, repo_name) == -1:
