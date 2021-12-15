@@ -38,7 +38,7 @@ def echo(update: Update, context: CallbackContext):
     update.message.reply_text(update.message.text)
 
 def help(update: Update, context: CallbackContext):
-    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo"
+    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo\n/issue number Get the issue with a number as paramater"
     update.message.reply_text(result_help)
 
 def setUser(update: Update, context: CallbackContext):
@@ -141,7 +141,7 @@ def getAllIssues(update: Update, context: CallbackContext):
         repo_name = repo_name[0][1]
 
         if github.verify_repo(git, str(repo_name)) == -1:
-            update.message.reply_text("This repository doesn't exist.")
+            update.message.reply_text("This repository doesn't exist. (or you don't have access to it)")
             return
         #now we construct the final message
         result=f'Open Issues of {str(repo_name)} 🔴\n\n'
@@ -149,7 +149,7 @@ def getAllIssues(update: Update, context: CallbackContext):
         issues = git.get_repo(str(repo_name)).get_issues(state='open')
         index = 1
         for issue in issues:
-            result +=f'{index}. {issue.title}\n'
+            result +=f'{issue.number}. {issue.title}\n'
             index = index + 1
         if index == 1:
             result = "No issues on this repo.☑️"
@@ -157,6 +157,45 @@ def getAllIssues(update: Update, context: CallbackContext):
     except Error as e:
         print('Custom Error: ',e)
     
+def get_Issue(update: Update, context: CallbackContext):
+    user_id = update.message.from_user.id
+    group_id = int(update.message.chat_id)
+    git = github.get_connection(db, user_id)
+    
+    issue_num = update.message.text[6:].strip()
+
+    repo_name=""
+    if group_id > 0:
+        update.message.reply_text("Go on the group you have a repo")
+        return
+   
+    if issue_num == "":
+        update.message.reply_text("You should write the number of the issue(i.e. /issue 4)")
+
+    if git == -1:
+        update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
+        return
+    
+    try:
+        repo_name = db.select('groups',group_id)
+        if repo_name == []:
+            update.message.reply_text("You do not have a repository set for this group. ❌")
+            return
+
+        repo_name = repo_name[0][1]
+
+        if github.verify_repo(git, str(repo_name)) == -1:
+            update.message.reply_text("This repository doesn't exist(or you don't have access to it).")
+            return
+        #now we construct the final message
+        issue = git.get_repo(str(repo_name)).get_issue(int(issue_num))
+        result=f'Issue: {str(issue.body)} 🔴\n\n'
+        
+        update.message.reply_text(result)
+    except Error as e:
+        print('Custom Error: ',e)
+    
+
 
 
 def error(update: Update, context: CallbackContext):
@@ -178,6 +217,7 @@ def main():
     dp.add_handler(CommandHandler("repos",get_myRepos))
     dp.add_handler(CommandHandler("setrepo",setRepoInChat))
     dp.add_handler(CommandHandler("issues",getAllIssues))
+    dp.add_handler(CommandHandler("issue",get_Issue))
     dp.add_handler(MessageHandler(Filters.text,echo)) 
     dp.add_error_handler(error)
 
