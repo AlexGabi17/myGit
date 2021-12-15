@@ -5,7 +5,8 @@ from migrations.db_conn import Database
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
-        self.db = Database("tests/db/test.sqlite")
+        self.path = "tests/db/test.sqlite"
+        self.db = Database(self.path)
 
     # Cleanup
     def tearDown(self):
@@ -14,8 +15,8 @@ class TestDatabase(unittest.TestCase):
         """
         self.db.exec_query(clear_table_query)
 
-        if os.path.exists("tests/db/test.sqlite"):
-          os.remove("tests/db/test.sqlite")
+        if os.path.exists(self.path):
+          os.remove(self.path)
 
 
     def test_init(self):
