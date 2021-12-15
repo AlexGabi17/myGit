@@ -200,7 +200,6 @@ def get_Issue(update: Update, context: CallbackContext):
         print('Custom Error: ',e)
     
 
-
 def error(update: Update, context: CallbackContext):
     """Log errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
