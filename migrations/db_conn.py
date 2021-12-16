@@ -48,6 +48,15 @@ class Database:
         self.cursor.execute(query)
         self.connection.commit()
 
+    
+    def update_group_repo(self, data):
+        if not data or not data["id"]:
+            raise Error('Wrong data format')
+        query = f'UPDATE groups SET repo = "{str(data["repo"])}" WHERE id = {str(data["id"])} ;'
+
+        self.cursor.execute(query)
+        self.connection.commit()
+
     def exec_query(self, query: str):
         try:
             self.cursor.execute(query)
