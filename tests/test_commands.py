@@ -16,22 +16,22 @@ class TestCommand(unittest.TestCase):
         pass
 
     def test_set(self):
-        # Setup args
-        temp_id = 12344
-        token = "1212413242342"
+        def test_input(id: int, token: str, chat_id: int):
+            self.mock_update.message.text = "/set " + token
+            self.mock_update.message.from_user.id = id
+            self.mock_update.message.chat_id = chat_id
 
-        self.mock_update.message.text = "/set " + token
-        self.mock_update.message.from_user.id = temp_id
-        self.mock_update.message.chat_id = 1
-        mock_context = Mock()
+        # Setup args
+        input = (12344, "2342134324", 1)
+        test_input(input[0], input[1], input[2])
 
         # Call function
-        setUser(self.mock_update, mock_context)
+        setUser(self.mock_update, Mock())
 
-        # Check the data in the database
-        rows = self.db.select('users', temp_id)
+       # Check the data in the database
+        rows = self.db.select('users', input[0])
         self.assertNotEqual(rows, [])
-        self.assertEqual(rows[0], (temp_id, token))
+        self.assertEqual(rows[0], (input[0], input[1]))
 
     def test_getRepos(self):
         pass

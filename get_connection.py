@@ -3,7 +3,7 @@ from github import Github
 from github import GithubException
 #the get_token() function receive the user_id parameter and it returns the GitHub Token
 
-def get_connection(db, user_id):
+def get_connection(db: Database, user_id: int):
     rows = db.select('users', user_id)
 
     if rows == []:
