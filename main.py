@@ -54,6 +54,10 @@ def setUser(update: Update, context: CallbackContext):
         update.message.reply_text("You should copy the token from GitHub.\nexample: /set yourToken")
         return
 
+    if int(update.message.chat_id) < 0:
+        update.message.reply_text("You cannot set your token in a group. It's not safe.\nGo private with the bot @@myGit_assistant_bot")
+        return
+
     try:
         #verify if user exist in database, if not, we insert it, else we update the GitHub Token
         result = db.select('users', user_id)

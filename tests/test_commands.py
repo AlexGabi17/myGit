@@ -34,8 +34,17 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(rows[0], (input[0], input[1]))
 
     def test_getRepos(self):
-        pass
+        def test_input(id: int):
+            self.mock_update.message.from_user.id = id
 
+        # Setup args
+        input_id = 12344
+        test_input(input_id)
+
+        # Get Github connection
+        result = self.db.select('users', input_id)
+        
+        
     def test_setRepo(self):
         pass
 
