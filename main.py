@@ -20,7 +20,7 @@ path = "migrations/db/myGit.sqlite"
 db = Database(path)
 
 # Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - at %(filename)s: %(lineno)d',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ def setUser(update: Update, context: CallbackContext):
         update.message.reply_text("You should copy the token from GitHub.\nexample: /set yourToken")
         return
     
+    # Check if the message comes from private chat
     if int(update.message.chat_id) < 0:
         update.message.reply_text("You cannot set your token in a group. It's not safe.\nGo private with the bot @@myGit_assistant_bot")
         return
@@ -56,7 +57,6 @@ def setUser(update: Update, context: CallbackContext):
     try:
         #verify if user exist in database, if not, we insert it, else we update the GitHub Token
         result = db.select('users', user_id)
-        print(result[1])
 
         if result == []:
             db.insert('users',{'id': str(user_id), 'token': token})   
@@ -64,6 +64,7 @@ def setUser(update: Update, context: CallbackContext):
             db.update_user_token({'id': str(user_id), 'token': token})
         
         update.message.reply_text("Successfully updated your GitHub Access Token")
+        logger.info("Updated Github Access Token")
 
     except Error as e:
         print('Custom Error: ', e)
@@ -89,7 +90,7 @@ def error(update: Update, context: CallbackContext):
 
 
 def main():
-    TOKEN =  open('token/token.txt','r').readline().strip()
+    TOKEN = open('token/token.txt','r').readline().strip()
     print(TOKEN)
     updater = Updater(TOKEN, use_context = True)
 
