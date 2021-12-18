@@ -57,7 +57,6 @@ def setUser(update: Update, context: CallbackContext):
     if int(update.message.chat_id) < 0:
         update.message.reply_text("You cannot set your token in a group. It's not safe.\nGo private with the bot @@myGit_assistant_bot")
         return
-
     try:
         #verify if user exist in database, if not, we insert it, else we update the GitHub Token
         result = db.select('users', user_id)
@@ -94,7 +93,6 @@ def setRepoInChat(update: Update, context: CallbackContext):
     repo_name = update.message.text[8:].strip()
 
     git = github.get_connection(db, user_id)
-    
     if git == -1:
         update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
         return
@@ -160,7 +158,7 @@ def getAllIssues(update: Update, context: CallbackContext):
         update.message.reply_text(result)
     except Error as e:
         print('Custom Error: ',e)
-    
+
 def get_Issue(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     group_id = int(update.message.chat_id)
