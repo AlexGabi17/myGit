@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import Mock
+
+from github.MainClass import Github
 from main import path, setUser
 from migrations.db_conn import Database
 
@@ -43,6 +45,8 @@ class TestCommand(unittest.TestCase):
 
         # Get Github connection
         result = self.db.select('users', input_id)
+
+        self.assertNotEqual(Github(result[0][1]), None)
         
         
     def test_setRepo(self):
