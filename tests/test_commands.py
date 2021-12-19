@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import Mock
 
-from github.MainClass import Github
-from main import path, setUser
+from sqlite3 import Error
+from main import path, setRepoInChat, setUser
 from migrations.db_conn import Database
 
 class TestCommand(unittest.TestCase):
@@ -14,8 +14,12 @@ class TestCommand(unittest.TestCase):
 
         self.db = Database(path)
 
-    def tearDown(self):
-        pass
+    def clean_from_db(self, table: str, id: int):
+        query = f"""
+            DELETE FROM {table} 
+            WHERE id={id}
+        """
+        self.db.exec_query(query)
 
     def test_set(self):
         def test_input(id: int, token: str, chat_id: int):
@@ -30,27 +34,56 @@ class TestCommand(unittest.TestCase):
         # Call function
         setUser(self.mock_update, Mock())
 
-       # Check the data in the database
+        # Check the data in the database
         rows = self.db.select('users', input[0])
         self.assertNotEqual(rows, [])
         self.assertEqual(rows[0], (input[0], input[1]))
-
-    def test_getRepos(self):
-        def test_input(id: int):
-            self.mock_update.message.from_user.id = id
-
-        # Setup args
-        input_id = 12344
-        test_input(input_id)
-
-        # Get Github connection
-        result = self.db.select('users', input_id)
-
-        self.assertNotEqual(Github(result[0][1]), None)
         
+        # Cleanup
+        self.clean_from_db('users', input[0])
         
     def test_setRepo(self):
-        pass
+        def test_input(id: int, chat_id: int, repo_name: str):
+            self.mock_update.message.text = "/setrepo " + repo_name
+            self.mock_update.message.from_user.id = id
+            self.mock_update.message.chat_id = chat_id
 
-    def test_issues(self):
-        pass
+        # Setup args
+        user_id = 123444
+        chat_id = -1
+        repo_name = "mstanciu552/dotfiles"
+        token = "12314512341"
+
+        test_input(user_id, chat_id, repo_name)
+
+        # Check if the user_id is present
+        res = self.db.select('users', user_id)
+
+        # Insert into users table if not already
+        if res == []:
+            self.db.insert('users', {'id': str(user_id), 'token': token})
+            
+            # Get user based on id
+            res = self.db.select('users', user_id)
+
+        # Assertions about the users table
+        self.assertNotEqual(res, [])
+        self.assertEqual(res[0], (user_id, token))
+
+        # Call function
+        func = setRepoInChat(self.mock_update, Mock())
+
+        # Test if the github token is invalid
+        self.assertEqual(func, -1)
+        if func == -1:
+            return
+
+        # Final Assertions
+        result = self.db.select('groups', chat_id)
+
+        self.assertEqual(result, [])
+        self.assertNotEqual(result[0], (user_id, repo_name))
+
+        # Cleanup
+        self.clean_from_db('users', user_id)
+        self.clean_from_db('groups', user_id)

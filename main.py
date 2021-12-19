@@ -10,6 +10,8 @@ relevant informations about the projects he's working at
 """
 
 import logging
+
+from github.GithubException import GithubException
 import get_connection as github
 from migrations.db_conn import Database
 from sqlite3 import Error
@@ -67,7 +69,6 @@ def setUser(update: Update, context: CallbackContext):
             db.update_user_token({'id': str(user_id), 'token': token})
         
         update.message.reply_text("Successfully updated your GitHub Access Token")
-        logger.info("Updated Github Access Token")
 
     except Error as e:
         print('Custom Error: ', e)
@@ -95,18 +96,18 @@ def setRepoInChat(update: Update, context: CallbackContext):
     git = github.get_connection(db, user_id)
     if git == -1:
         update.message.reply_text("You are not registered if you are new. Or your Github token is not valid( it's wrong or expired ).❌")
-        return
+        return -1
     elif group_id > 0:
         update.message.reply_text("Go on your group and set the Group's repository.")
-        return
+        return -2
     elif len(repo_name) == 0:
         update.message.reply_text("You have to specify a repo name(i.e. username/myfirstrepo)")
-        return
+        return -3
     else:
         #verify if the repo received as param does exist
         if github.verify_repo(git, repo_name) == -1:
             update.message.reply_text("This repository doesn't exist.")
-            return
+            return -4
 
         try:
             result = db.select('groups', group_id)
