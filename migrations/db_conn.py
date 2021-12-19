@@ -28,13 +28,24 @@ class Database:
         values = "'"
         for key, value in data.items():
             fields += key + ","
-            values += value + "','"
+            values += str(value) + "','"
 
         fields = fields[: len(fields) - 1]
         values = values[: len(values) - 2]
 
         query = f"INSERT INTO {table}({fields}) VALUES({values})"
         self.cursor.execute(query)
+        self.connection.commit()
+
+    def delete(self, table: str, id: int):
+        if not id:
+            return
+
+        delete_query = f"""
+            DELETE FROM {table} 
+            WHERE id = {str(id)}
+        """
+        self.cursor.execute(delete_query)
         self.connection.commit()
 
     def update_user_token(self, data):
