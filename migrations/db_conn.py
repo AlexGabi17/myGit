@@ -37,6 +37,17 @@ class Database:
         self.cursor.execute(query)
         self.connection.commit()
 
+    def delete(self, table: str, id: int):
+        if not id:
+            return
+
+        delete_query = f"""
+            DELETE FROM {table} 
+            WHERE id = {str(id)}
+        """
+        self.cursor.execute(delete_query)
+        self.connection.commit()
+
     def update_user_token(self, data):
         if not data or not data["id"]:
             raise Error("Wrong data format")
