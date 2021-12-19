@@ -5,8 +5,8 @@ from sqlite3 import Error
 from main import path, setRepoInChat, setUser
 from migrations.db_conn import Database
 
-class TestCommand(unittest.TestCase):
 
+class TestCommand(unittest.TestCase):
     def setUp(self):
         self.mock_update = Mock()
         self.mock_update.message = Mock()
@@ -35,13 +35,13 @@ class TestCommand(unittest.TestCase):
         setUser(self.mock_update, Mock())
 
         # Check the data in the database
-        rows = self.db.select('users', input[0])
+        rows = self.db.select("users", input[0])
         self.assertNotEqual(rows, [])
         self.assertEqual(rows[0], (input[0], input[1]))
-        
+
         # Cleanup
-        self.clean_from_db('users', input[0])
-        
+        self.clean_from_db("users", input[0])
+
     def test_setRepo(self):
         def test_input(id: int, chat_id: int, repo_name: str):
             self.mock_update.message.text = "/setrepo " + repo_name
@@ -57,14 +57,14 @@ class TestCommand(unittest.TestCase):
         test_input(user_id, chat_id, repo_name)
 
         # Check if the user_id is present
-        res = self.db.select('users', user_id)
+        res = self.db.select("users", user_id)
 
         # Insert into users table if not already
         if res == []:
-            self.db.insert('users', {'id': str(user_id), 'token': token})
-            
+            self.db.insert("users", {"id": str(user_id), "token": token})
+
             # Get user based on id
-            res = self.db.select('users', user_id)
+            res = self.db.select("users", user_id)
 
         # Assertions about the users table
         self.assertNotEqual(res, [])
@@ -79,11 +79,11 @@ class TestCommand(unittest.TestCase):
             return
 
         # Final Assertions
-        result = self.db.select('groups', chat_id)
+        result = self.db.select("groups", chat_id)
 
         self.assertEqual(result, [])
         self.assertNotEqual(result[0], (user_id, repo_name))
 
         # Cleanup
-        self.clean_from_db('users', user_id)
-        self.clean_from_db('groups', user_id)
+        self.clean_from_db("users", user_id)
+        self.clean_from_db("groups", user_id)

@@ -2,8 +2,8 @@ import os
 import unittest
 from migrations.db_conn import Database
 
-class TestDatabase(unittest.TestCase):
 
+class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.path = "tests/db/test.sqlite"
         self.db = Database(self.path)
@@ -16,8 +16,7 @@ class TestDatabase(unittest.TestCase):
         self.db.exec_query(clear_table_query)
 
         if os.path.exists(self.path):
-          os.remove(self.path)
-
+            os.remove(self.path)
 
     def test_init(self):
         # Create users table
@@ -30,9 +29,11 @@ class TestDatabase(unittest.TestCase):
         self.db.exec_query(create_user_table)
 
         # Check if the table exists
-        self.db.cursor.execute(f'SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'users\'')
+        self.db.cursor.execute(
+            f"SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+        )
         self.assertNotEqual(self.db.cursor.fetchall(), [])
-        
+
     def test_insert(self):
         # Create users table
         create_user_table = """
@@ -44,10 +45,10 @@ class TestDatabase(unittest.TestCase):
         self.db.exec_query(create_user_table)
 
         # Test inserting into the database
-        self.db.insert('users', {'id': '320', 'token': '124234234'})
-        row = self.db.select('users', 320)
+        self.db.insert("users", {"id": "320", "token": "124234234"})
+        row = self.db.select("users", 320)
 
         self.assertNotEqual(row, [])
 
         # Test selecting data from the database
-        self.assertEqual(row[0], (320, '124234234')) 
+        self.assertEqual(row[0], (320, "124234234"))
