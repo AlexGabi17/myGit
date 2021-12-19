@@ -23,7 +23,7 @@ from telegram.ext import (
 )
 from telegram.update import Update
 
-path = "migrations/db/myGit.sqlite"
+path = 'migrations/db/myGit.sqlite'
 db = Database(path)
 
 # Enable logging
