@@ -28,7 +28,7 @@ class Database:
         values = "'"
         for key, value in data.items():
             fields += key + ","
-            values += value + "','"
+            values += str(value) + "','"
 
         fields = fields[: len(fields) - 1]
         values = values[: len(values) - 2]
