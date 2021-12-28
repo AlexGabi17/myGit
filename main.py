@@ -244,9 +244,7 @@ def get_Issue(update: Update, context: CallbackContext):
 def addTodo(update: Update, context: CallbackContext):
     data = update.message.text.split(" ")
     todo = data[1].strip()
-    due_date = (
-        data[2].strip() if data[2] else None
-    )  # TODO Fix if due_date is not passed
+    due_date = data[2].strip() if len(data) >= 3 else None
 
     fields = {
         "id": str(update.message.from_user.id),
@@ -274,7 +272,7 @@ def showTodo(update: Update, context: CallbackContext):
 def addRepoTodo(update: Update, context: CallbackContext):
     data = update.message.text.split(" ")
     todo = data[1].strip()
-    due_date = data[2].strip() if data[2] else None
+    due_date = data[2].strip() if len(data) >= 3 else None
     group_id = int(update.message.chat_id)
 
     fields = {
