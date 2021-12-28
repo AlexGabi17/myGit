@@ -9,7 +9,7 @@ class Database:
             self.connection = sqlite3.connect(path, check_same_thread=False)
             self.cursor = self.connection.cursor()
         except Error as e:
-            raise Error(e)
+            print(e)
 
     def select(self, table: str, id=None):
         query = f"SELECT * FROM '{table}'"

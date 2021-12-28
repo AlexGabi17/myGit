@@ -23,7 +23,7 @@ from telegram.ext import (
 )
 from telegram.update import Update
 
-path = 'migrations/db/myGit.sqlite'
+path = "migrations/db/myGit.sqlite"
 db = Database(path)
 
 # Enable logging
@@ -241,6 +241,96 @@ def get_Issue(update: Update, context: CallbackContext):
         print("Custom Error: ", e)
 
 
+def addTodo(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    todo = data[1].strip()
+    due_date = (
+        data[2].strip() if data[2] else None
+    )  # TODO Fix if due_date is not passed
+
+    fields = {
+        "id": str(update.message.from_user.id),
+        "todo": todo,
+        **({"due_date": str(due_date)} if due_date else {}),
+        "repo": "NULL",
+    }
+
+    db.insert("todos", fields)
+    update.message.reply_text(f"Todo task {todo} has been added")
+
+
+def showTodo(update: Update, context: CallbackContext):
+    todos = db.select("todos")
+
+    if todos == []:
+        update.message.reply_text("No todos to display")
+        return
+
+    update.message.reply_text("Index | Todo | Due date")
+    for idx, todo in enumerate(todos):
+        update.message.reply_text(f"{idx + 1} | {todo[2]} | {todo[3]}")
+
+
+def addRepoTodo(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    todo = data[1].strip()
+    due_date = data[2].strip() if data[2] else None
+    group_id = int(update.message.chat_id)
+
+    fields = {
+        "id": str(update.message.from_user.id),
+        "todo": todo,
+        **({"due_date": str(due_date)} if due_date else {}),
+        "repo": str(group_id),
+    }
+
+    db.insert("todos", fields)
+    update.message.reply_text(f"Todo task {todo} has been added")
+
+
+def showRepoTodo(update: Update, context: CallbackContext):
+    todos = db.select("todos")
+    group_id = int(update.message.chat_id)
+
+    todos = list(filter(lambda todo: todo[1] == group_id, todos))
+
+    if todos == []:
+        update.message.reply_text("No todos to display")
+        return
+
+    update.message.reply_text("Index | Todo | Due date")
+    for idx, todo in enumerate(todos):
+        update.message.reply_text(f"{idx + 1} | {todo[2]} | {todo[3]}")
+
+
+def removeTodo(update: Update, context: CallbackContext):
+    todo = update.message.text.split(" ")[1].strip()
+
+    # TODO Change for it to be a default function in Database class
+    delete_query = f"""
+        DELETE FROM todos
+        WHERE todo='{todo}' 
+        AND id={str(update.message.from_user.id)}
+    """
+    db.exec_query(delete_query)
+    update.message.reply_text(f"Todo task {todo} was deleted")
+
+
+def markAsCompleted(update: Update, context: CallbackContext):
+    todo = update.message.text.split(" ")[1].strip()
+
+    # TODO MAYBE make this a default function
+    update_query = f"""
+        UPDATE todos
+        SET completed=1
+        WHERE todo='{todo}'
+        AND id={str(update.message.from_user.id)}
+    """
+    db.exec_query(update_query)
+
+    update.message.reply_text(f"Todo task {todo} was updated")
+
+
 def error(update: Update, context: CallbackContext):
     """Log errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -261,6 +351,12 @@ def main():
     dp.add_handler(CommandHandler("setrepo", setRepoInChat))
     dp.add_handler(CommandHandler("issues", getAllIssues))
     dp.add_handler(CommandHandler("issue", get_Issue))
+    dp.add_handler(CommandHandler("addtodo", addTodo))
+    dp.add_handler(CommandHandler("showtodo", showTodo))
+    dp.add_handler(CommandHandler("showrepotodo", showRepoTodo))
+    dp.add_handler(CommandHandler("addrepotodo", addRepoTodo))
+    dp.add_handler(CommandHandler("deltodo", removeTodo))
+    dp.add_handler(CommandHandler("completed", markAsCompleted))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
 
