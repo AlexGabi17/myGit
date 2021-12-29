@@ -264,9 +264,10 @@ def showTodo(update: Update, context: CallbackContext):
         update.message.reply_text("No todos to display")
         return
 
-    update.message.reply_text("Index | Todo | Due date")
+    message = "Index | Todo | Due date"
     for idx, todo in enumerate(todos):
-        update.message.reply_text(f"{idx + 1} | {todo[2]} | {todo[3]}")
+        message += f"\n{idx + 1} | {todo[2]} | {todo[3]}"
+    update.message.reply_text(message)
 
 
 def addRepoTodo(update: Update, context: CallbackContext):
@@ -296,9 +297,10 @@ def showRepoTodo(update: Update, context: CallbackContext):
         update.message.reply_text("No todos to display")
         return
 
-    update.message.reply_text("Index | Todo | Due date")
+    message = "Index | Todo | Due date"
     for idx, todo in enumerate(todos):
-        update.message.reply_text(f"{idx + 1} | {todo[2]} | {todo[3]}")
+        message += f"\n{idx + 1} | {todo[2]} | {todo[3]}"
+    update.message.reply_text(message)
 
 
 def removeTodo(update: Update, context: CallbackContext):
