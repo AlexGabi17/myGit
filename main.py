@@ -53,7 +53,8 @@ def echo(update: Update, context: CallbackContext):
 
 
 def help(update: Update, context: CallbackContext):
-    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo\n/issue number Get the issue with a number as paramater"
+    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo\n/issue number Get the issue with a number as paramater\n\nFor todo tasks:\n\n/addtodo <task> <due date> Add a todo task\n/addrepotodo <task> <due date> Add a todo task to the repo that is set in the group\n/showtodo Show all todo tasks\n/showrepotodo Show all todo tasks related to the currently set repo\n/deltodo <task> Delete a todo task based on its text\n/completed <task> Set a todo task as completed"
+
     update.message.reply_text(result_help)
 
 
