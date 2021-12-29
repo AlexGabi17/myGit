@@ -9,6 +9,7 @@ relevant informations about the projects he's working at
 """
 
 import logging
+from utils import get_task_from_command
 
 from github.GithubException import GithubException
 import get_connection as github
@@ -244,8 +245,9 @@ def get_Issue(update: Update, context: CallbackContext):
 
 def addTodo(update: Update, context: CallbackContext):
     data = update.message.text.split(" ")
-    todo = data[1].strip()
-    due_date = data[2].strip() if len(data) >= 3 else None
+    idx, todo = get_task_from_command(data)
+    todo = todo.strip()
+    due_date = data[idx].strip() if len(data) >= idx + 1 else None
 
     fields = {
         "id": str(update.message.from_user.id),
@@ -273,8 +275,9 @@ def showTodo(update: Update, context: CallbackContext):
 
 def addRepoTodo(update: Update, context: CallbackContext):
     data = update.message.text.split(" ")
-    todo = data[1].strip()
-    due_date = data[2].strip() if len(data) >= 3 else None
+    idx, todo = get_task_from_command(data)
+    todo = todo.strip()
+    due_date = data[idx].strip() if len(data) >= idx + 1 else None
     group_id = int(update.message.chat_id)
 
     fields = {
