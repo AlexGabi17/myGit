@@ -308,7 +308,9 @@ def showRepoTodo(update: Update, context: CallbackContext):
 
 
 def removeTodo(update: Update, context: CallbackContext):
-    todo = update.message.text.split(" ")[1].strip()
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
 
     # TODO Change for it to be a default function in Database class
     delete_query = f"""
@@ -321,7 +323,9 @@ def removeTodo(update: Update, context: CallbackContext):
 
 
 def markAsCompleted(update: Update, context: CallbackContext):
-    todo = update.message.text.split(" ")[1].strip()
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
 
     # TODO MAYBE make this a default function
     update_query = f"""
