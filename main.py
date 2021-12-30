@@ -269,7 +269,9 @@ def showTodo(update: Update, context: CallbackContext):
 
     message = "Index | Todo | Due date"
     for idx, todo in enumerate(todos):
-        message += f"\n{idx + 1} | {todo[2]} | {todo[3]}"
+        message += (
+            f"\n{'✅' if todo[-1] == 1 else '❌ '} {idx + 1} | {todo[2]} | {todo[3]}"
+        )
     update.message.reply_text(message)
 
 
@@ -303,7 +305,9 @@ def showRepoTodo(update: Update, context: CallbackContext):
 
     message = "Index | Todo | Due date"
     for idx, todo in enumerate(todos):
-        message += f"\n{idx + 1} | {todo[2]} | {todo[3]}"
+        message += (
+            f"\n{'✅' if todo[-1] == 1 else '❌ '} {idx + 1} | {todo[2]} | {todo[3]}"
+        )
     update.message.reply_text(message)
 
 
@@ -319,6 +323,7 @@ def removeTodo(update: Update, context: CallbackContext):
         AND id={str(update.message.from_user.id)}
     """
     db.exec_query(delete_query)
+    # TODO Check if a delete ocurred
     update.message.reply_text(f"Todo task {todo} was deleted")
 
 
