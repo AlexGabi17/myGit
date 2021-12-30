@@ -20,6 +20,21 @@ class Database:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
+    def select_order(self, table: str, order: dict = None, id=None):
+        query = f"SELECT * FROM '{table}'"
+        if id:
+            query += f"WHERE id = {str(id)}"
+
+        if order:
+            query += " ORDER BY "
+            for key, value in order.items():
+                query += f"{key} {value},"
+            query = query[:-1]
+        query += ";"
+
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
     def insert(self, table, data):
         if not data:
             raise Error("Wrong data format")

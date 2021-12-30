@@ -261,7 +261,7 @@ def addTodo(update: Update, context: CallbackContext):
 
 
 def showTodo(update: Update, context: CallbackContext):
-    todos = db.select("todos")
+    todos = db.select_order("todos", {"id": "ASC"})
 
     if todos == []:
         update.message.reply_text("No todos to display")
@@ -294,7 +294,7 @@ def addRepoTodo(update: Update, context: CallbackContext):
 
 
 def showRepoTodo(update: Update, context: CallbackContext):
-    todos = db.select("todos")
+    todos = db.select_order("todos", {"id": "ASC"})
     group_id = int(update.message.chat_id)
 
     todos = list(filter(lambda todo: todo[1] == group_id, todos))
@@ -319,8 +319,8 @@ def removeTodo(update: Update, context: CallbackContext):
     # TODO Change for it to be a default function in Database class
     delete_query = f"""
         DELETE FROM todos
-        WHERE todo='{todo}' 
-        AND id={str(update.message.from_user.id)}
+        WHERE todo LIKE '{todo}%' 
+        AND id={str(update.message.from_user.id)};
     """
     db.exec_query(delete_query)
     # TODO Check if a delete ocurred
@@ -336,12 +336,35 @@ def markAsCompleted(update: Update, context: CallbackContext):
     update_query = f"""
         UPDATE todos
         SET completed=1
-        WHERE todo='{todo}'
+        WHERE todo LIKE '{todo}%'
         AND id={str(update.message.from_user.id)}
     """
     db.exec_query(update_query)
 
     update.message.reply_text(f"Todo task {todo} was updated")
+
+
+def getTodoId(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
+
+    query = f"""
+        SELECT id, todo, completed from todos
+        WHERE todo LIKE '{todo}%'
+        ORDER BY id ASC;
+    """
+    db.exec_query(query)
+
+    result = db.cursor.fetchall()
+    if result == []:
+        update.message.reply_text("No matching todo tasks")
+        return
+
+    message = "Id | Todo"
+    for _, todo in enumerate(result):
+        message += f"\n{'✅' if todo[-1] == 1 else '❌'} {todo[0]} | {todo[1]}"
+    update.message.reply_text(message)
 
 
 def error(update: Update, context: CallbackContext):
@@ -370,6 +393,7 @@ def main():
     dp.add_handler(CommandHandler("addrepotodo", addRepoTodo))
     dp.add_handler(CommandHandler("deltodo", removeTodo))
     dp.add_handler(CommandHandler("completed", markAsCompleted))
+    dp.add_handler(CommandHandler("gettodoid", getTodoId))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
 
