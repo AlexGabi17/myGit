@@ -87,7 +87,8 @@ def setUser(update: Update, context: CallbackContext):
         if result == []:
             db.insert("users", {"id": str(user_id), "token": token})
         else:
-            db.update_user_token({"id": str(user_id), "token": token})
+            # db.update_user_token({"id": str(user_id), "token": token})
+            db.update("users", {"token": token}, str(user_id))
 
         update.message.reply_text("Successfully updated your GitHub Access Token")
 
@@ -143,7 +144,8 @@ def setRepoInChat(update: Update, context: CallbackContext):
             if result == []:
                 db.insert("groups", {"id": str(group_id), "repo": repo_name})
             else:
-                db.update_group_repo({"id": str(group_id), "repo": repo_name})
+                # db.update_group_repo({"id": str(group_id), "repo": repo_name})
+                db.update("groups", {"repo": repo_name}, str(group_id))
 
             update.message.reply_text("Successfully set the repository.☑️")
         except Error as e:

@@ -52,6 +52,17 @@ class Database:
         self.cursor.execute(query)
         self.connection.commit()
 
+    def update(self, table: str, data: dict, id: str):
+        if not data or table == "":
+            return
+        query = f"UPDATE {table} SET "
+        for key, value in data.items():
+            query += f'{key} = "{value}",'
+        query = query[:-1]
+        query += f" WHERE id={id};"
+
+        self.exec_query(query)
+
     def delete(self, table: str, id: int):
         if not id:
             return

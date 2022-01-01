@@ -82,3 +82,28 @@ class TestDatabase(unittest.TestCase):
         # Check if the data was deleted
         rows = self.db.select(table, str(id))
         self.assertEqual(rows, [])
+
+    def test_update(self):
+        # Create users table
+        create_user_table = """
+            CREATE TABLE IF NOT EXISTS users(
+                id INTEGER PRIMARY KEY,
+                token TEXT NOT NULL
+            )
+        """
+        self.db.exec_query(create_user_table)
+
+        # Test inserting into the database
+        self.db.insert("users", {"id": "320", "token": "124234234"})
+        row = self.db.select("users", 320)
+        self.assertNotEqual(row, [])
+
+        # Test selecting data from the database
+        self.assertEqual(row[0], (320, "124234234"))
+
+        # Test update method
+        self.db.update("users", {"token": 223344232}, str(320))
+
+        row = self.db.select("users", 320)
+        self.assertNotEqual(row, [])
+        self.assertEqual(row[0], (320, "223344232"))
