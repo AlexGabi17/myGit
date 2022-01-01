@@ -9,12 +9,27 @@ class Database:
             self.connection = sqlite3.connect(path, check_same_thread=False)
             self.cursor = self.connection.cursor()
         except Error as e:
-            raise Error(e)
+            print(e)
 
     def select(self, table: str, id=None):
         query = f"SELECT * FROM '{table}'"
         if id:
             query += f"WHERE id = {str(id)}"
+        query += ";"
+
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    def select_order(self, table: str, order: dict = None, id=None):
+        query = f"SELECT * FROM '{table}'"
+        if id:
+            query += f"WHERE id = {str(id)}"
+
+        if order:
+            query += " ORDER BY "
+            for key, value in order.items():
+                query += f"{key} {value},"
+            query = query[:-1]
         query += ";"
 
         self.cursor.execute(query)
@@ -36,6 +51,17 @@ class Database:
         query = f"INSERT INTO {table}({fields}) VALUES({values})"
         self.cursor.execute(query)
         self.connection.commit()
+
+    def update(self, table: str, data: dict, id: str):
+        if not data or table == "":
+            return
+        query = f"UPDATE {table} SET "
+        for key, value in data.items():
+            query += f'{key} = "{value}",'
+        query = query[:-1]
+        query += f" WHERE id={id};"
+
+        self.exec_query(query)
 
     def delete(self, table: str, id: int):
         if not id:

@@ -9,6 +9,7 @@ relevant informations about the projects he's working at
 """
 
 import logging
+from utils import get_task_from_command
 
 from github.GithubException import GithubException
 import get_connection as github
@@ -23,7 +24,7 @@ from telegram.ext import (
 )
 from telegram.update import Update
 
-path = 'migrations/db/myGit.sqlite'
+path = "migrations/db/myGit.sqlite"
 db = Database(path)
 
 # Enable logging
@@ -53,7 +54,8 @@ def echo(update: Update, context: CallbackContext):
 
 
 def help(update: Update, context: CallbackContext):
-    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo\n/issue number Get the issue with a number as paramater"
+    result_help = "Commands🤖\n\n/start for instructions\n/set yourToken for singing in your github account(❗sign in just in private conversation with the bot❗no one should see your private key)\n/repos retrieves the list of your repositories\n\nFor repositories:\n\n/setrepo yourRepository (i.e. username/Repository_name)\n/issues Get all the issues of the repo\n/issue number Get the issue with a number as paramater\n\nFor todo tasks:\n\n/addtodo <task> <due date> Add a todo task\n/addrepotodo <task> <due date> Add a todo task to the repo that is set in the group\n/showtodo Show all todo tasks\n/showrepotodo Show all todo tasks related to the currently set repo\n/deltodo <task> Delete a todo task based on its text\n/completed <task> Set a todo task as completed"
+
     update.message.reply_text(result_help)
 
 
@@ -85,7 +87,8 @@ def setUser(update: Update, context: CallbackContext):
         if result == []:
             db.insert("users", {"id": str(user_id), "token": token})
         else:
-            db.update_user_token({"id": str(user_id), "token": token})
+            # db.update_user_token({"id": str(user_id), "token": token})
+            db.update("users", {"token": token}, str(user_id))
 
         update.message.reply_text("Successfully updated your GitHub Access Token")
 
@@ -141,7 +144,8 @@ def setRepoInChat(update: Update, context: CallbackContext):
             if result == []:
                 db.insert("groups", {"id": str(group_id), "repo": repo_name})
             else:
-                db.update_group_repo({"id": str(group_id), "repo": repo_name})
+                # db.update_group_repo({"id": str(group_id), "repo": repo_name})
+                db.update("groups", {"repo": repo_name}, str(group_id))
 
             update.message.reply_text("Successfully set the repository.☑️")
         except Error as e:
@@ -241,6 +245,131 @@ def get_Issue(update: Update, context: CallbackContext):
         print("Custom Error: ", e)
 
 
+# TODO Add option to handle todos based on ID
+def addTodo(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    idx, todo = get_task_from_command(data)
+    todo = todo.strip()
+    due_date = data[idx].strip() if len(data) >= idx + 1 else None
+
+    fields = {
+        "id": str(update.message.from_user.id),
+        "todo": todo,
+        **({"due_date": str(due_date)} if due_date else {}),
+        "repo": "NULL",
+    }
+
+    db.insert("todos", fields)
+    update.message.reply_text(f"Todo task {todo} has been added")
+
+
+def showTodo(update: Update, context: CallbackContext):
+    todos = db.select_order("todos", {"id": "ASC"})
+
+    if todos == []:
+        update.message.reply_text("No todos to display")
+        return
+
+    message = "Index | Todo | Due date"
+    for idx, todo in enumerate(todos):
+        message += (
+            f"\n{'✅' if todo[-1] == 1 else '❌ '} {idx + 1} | {todo[2]} | {todo[3]}"
+        )
+    update.message.reply_text(message)
+
+
+def addRepoTodo(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    idx, todo = get_task_from_command(data)
+    todo = todo.strip()
+    due_date = data[idx].strip() if len(data) >= idx + 1 else None
+    group_id = int(update.message.chat_id)
+
+    fields = {
+        "id": str(update.message.from_user.id),
+        "todo": todo,
+        **({"due_date": str(due_date)} if due_date else {}),
+        "repo": str(group_id),
+    }
+
+    db.insert("todos", fields)
+    update.message.reply_text(f"Todo task {todo} has been added")
+
+
+def showRepoTodo(update: Update, context: CallbackContext):
+    todos = db.select_order("todos", {"id": "ASC"})
+    group_id = int(update.message.chat_id)
+
+    todos = list(filter(lambda todo: todo[1] == group_id, todos))
+
+    if todos == []:
+        update.message.reply_text("No todos to display")
+        return
+
+    message = "Index | Todo | Due date"
+    for idx, todo in enumerate(todos):
+        message += (
+            f"\n{'✅' if todo[-1] == 1 else '❌ '} {idx + 1} | {todo[2]} | {todo[3]}"
+        )
+    update.message.reply_text(message)
+
+
+def removeTodo(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
+
+    # TODO Change for it to be a default function in Database class
+    delete_query = f"""
+        DELETE FROM todos
+        WHERE todo LIKE '{todo}%' 
+        AND id={str(update.message.from_user.id)};
+    """
+    db.exec_query(delete_query)
+    # TODO Check if a delete ocurred
+    update.message.reply_text(f"Todo task {todo} was deleted")
+
+
+def markAsCompleted(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
+
+    # TODO MAYBE make this a default function
+    update_query = f"""
+        UPDATE todos
+        SET completed=1
+        WHERE todo LIKE '{todo}%'
+        AND id={str(update.message.from_user.id)}
+    """
+    db.exec_query(update_query)
+
+    update.message.reply_text(f"Todo task {todo} was updated")
+
+
+def getTodoId(update: Update, context: CallbackContext):
+    data = update.message.text.split(" ")
+    _, todo = get_task_from_command(data)
+    todo = todo.strip()
+
+    query = f"""
+        SELECT id, todo, completed from todos
+        WHERE todo LIKE '{todo}%'
+        ORDER BY id ASC;
+    """
+    db.exec_query(query)
+
+    result = db.cursor.fetchall()
+    if result == []:
+        update.message.reply_text("No matching todo tasks")
+        return
+
+    message = "Id | Todo"
+    for _, todo in enumerate(result):
+        message += f"\n{'✅' if todo[-1] == 1 else '❌'} {todo[0]} | {todo[1]}"
+    update.message.reply_text(message)
+
+
 def error(update: Update, context: CallbackContext):
     """Log errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -261,6 +390,13 @@ def main():
     dp.add_handler(CommandHandler("setrepo", setRepoInChat))
     dp.add_handler(CommandHandler("issues", getAllIssues))
     dp.add_handler(CommandHandler("issue", get_Issue))
+    dp.add_handler(CommandHandler("addtodo", addTodo))
+    dp.add_handler(CommandHandler("showtodo", showTodo))
+    dp.add_handler(CommandHandler("showrepotodo", showRepoTodo))
+    dp.add_handler(CommandHandler("addrepotodo", addRepoTodo))
+    dp.add_handler(CommandHandler("deltodo", removeTodo))
+    dp.add_handler(CommandHandler("completed", markAsCompleted))
+    dp.add_handler(CommandHandler("gettodoid", getTodoId))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
 
