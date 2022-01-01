@@ -245,7 +245,6 @@ def get_Issue(update: Update, context: CallbackContext):
         print("Custom Error: ", e)
 
 
-# TODO Add option to handle todos based on ID
 def addTodo(update: Update, context: CallbackContext):
     data = update.message.text.split(" ")
     idx, todo = get_task_from_command(data)
@@ -345,29 +344,6 @@ def markAsCompleted(update: Update, context: CallbackContext):
     db.exec_query(update_query)
 
     update.message.reply_text(f"Todo task {todo} was updated")
-
-
-def getTodoId(update: Update, context: CallbackContext):
-    data = update.message.text.split(" ")
-    _, todo = get_task_from_command(data)
-    todo = todo.strip()
-
-    query = f"""
-        SELECT id, todo, completed from todos
-        WHERE todo LIKE '{todo}%'
-        ORDER BY id ASC;
-    """
-    db.exec_query(query)
-
-    result = db.cursor.fetchall()
-    if result == []:
-        update.message.reply_text("No matching todo tasks")
-        return
-
-    message = "Id | Todo"
-    for _, todo in enumerate(result):
-        message += f"\n{'✅' if todo[-1] == 1 else '❌'} {todo[0]} | {todo[1]}"
-    update.message.reply_text(message)
 
 
 def error(update: Update, context: CallbackContext):
