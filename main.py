@@ -318,13 +318,8 @@ def removeTodo(update: Update, context: CallbackContext):
     _, todo = get_task_from_command(data)
     todo = todo.strip()
 
-    # TODO Change for it to be a default function in Database class
-    delete_query = f"""
-        DELETE FROM todos
-        WHERE todo LIKE '{todo}%' 
-        AND id={str(update.message.from_user.id)};
-    """
-    db.exec_query(delete_query)
+    db.delete_like("todos", update.message.from_user.id, {"todo": todo})
+
     # TODO Check if a delete ocurred
     update.message.reply_text(f"Todo task {todo} was deleted")
 
@@ -334,14 +329,9 @@ def markAsCompleted(update: Update, context: CallbackContext):
     _, todo = get_task_from_command(data)
     todo = todo.strip()
 
-    # TODO MAYBE make this a default function
-    update_query = f"""
-        UPDATE todos
-        SET completed=1
-        WHERE todo LIKE '{todo}%'
-        AND id={str(update.message.from_user.id)}
-    """
-    db.exec_query(update_query)
+    db.update_like(
+        "todos", {"completed": "1"}, update.message.from_user.id, {"todo": todo}
+    )
 
     update.message.reply_text(f"Todo task {todo} was updated")
 
