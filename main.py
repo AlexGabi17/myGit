@@ -372,7 +372,6 @@ def main():
     dp.add_handler(CommandHandler("addrepotodo", addRepoTodo))
     dp.add_handler(CommandHandler("deltodo", removeTodo))
     dp.add_handler(CommandHandler("completed", markAsCompleted))
-    dp.add_handler(CommandHandler("gettodoid", getTodoId))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
 
