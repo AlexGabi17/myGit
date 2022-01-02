@@ -63,6 +63,22 @@ class Database:
 
         self.exec_query(query)
 
+    def update_like(self, table: str, data: dict, id: str, like: dict):
+        if not data or table == "":
+            return
+        query = f"UPDATE {table} SET "
+        for key, value in data.items():
+            query += f'{key} = "{value}",'
+        query = query[:-1]
+
+        query += " WHERE"
+
+        for key, value in like.items():
+            query += f" {key} LIKE '{value}%' AND"
+        query += f" id={id};"
+
+        self.exec_query(query)
+
     def delete(self, table: str, id: int):
         if not id:
             return
@@ -73,6 +89,21 @@ class Database:
         """
         self.cursor.execute(delete_query)
         self.connection.commit()
+
+    def delete_like(self, table: str, id: int, like: dict):
+        if not id:
+            return
+
+        delete_query = f"DELETE FROM {table}"
+
+        delete_query += " WHERE"
+
+        for key, value in like.items():
+            delete_query += f" {key} LIKE '{value}%' AND"
+
+        delete_query += f" id={str(id)};"
+
+        self.exec_query(delete_query)
 
     def update_user_token(self, data):
         if not data or not data["id"]:
