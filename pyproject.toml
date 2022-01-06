@@ -4,3 +4,9 @@ ignore = ["E402", "E501", "W6"]
 in-place = true
 recursive = true
 aggressive = 3
+
+[project]
+dependencies = [
+  'python-telegram-bot >= 13.10',
+  'PyGithub >= 1.55'
+]
